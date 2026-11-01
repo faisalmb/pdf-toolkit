@@ -10,6 +10,8 @@
 
 مبني بـ Python وPyQt5 وPyMuPDF. الإصدار 11.0.0.
 
+**[⬇️ تنزيل أحدث إصدار](https://github.com/faisalmb/pdf-toolkit/releases/latest)**: [ويندوز](https://github.com/faisalmb/pdf-toolkit/releases/latest/download/PDFMerger-Setup-11.0.0.exe) · [ماك](https://github.com/faisalmb/pdf-toolkit/releases/latest/download/PDFMerger-11.0.0-macOS-arm64.dmg) · [لينكس](https://github.com/faisalmb/pdf-toolkit/releases/latest/download/PDFMerger-11.0.0-linux-x86_64.tar.gz)
+
 ---
 
 ## المحتويات
@@ -68,14 +70,14 @@
 
 ## التنزيل والتثبيت
 
-الحزم الجاهزة تُنشر تلقائيًا في صفحة **Releases** مع كل تحديث
+الحزم الجاهزة تُنشر تلقائيًا في صفحة **[Releases](https://github.com/faisalmb/pdf-toolkit/releases)** مع كل تحديث
 (انظر [البناء التلقائي](#البناء-التلقائي-github-actions)).
 
 | النظام | الملف | التثبيت |
 |---|---|---|
-| ويندوز 10/11 (x64) | `PDFMerger-Setup-11.0.0.exe` | شغّله؛ يثبّت للمستخدم الحالي بدون صلاحيات مدير |
-| ماك (Apple Silicon) | `PDFMerger-11.0.0-macOS-arm64.dmg` | افتحه واسحب **PDFMerger** إلى **Applications** |
-| لينكس (x86_64) | `PDFMerger-11.0.0-linux-x86_64.tar.gz` | فك الضغط ثم شغّل `./install.sh` |
+| ويندوز 10/11 (x64) | [`PDFMerger-Setup-11.0.0.exe`](https://github.com/faisalmb/pdf-toolkit/releases/latest/download/PDFMerger-Setup-11.0.0.exe) | شغّله؛ يثبّت للمستخدم الحالي بدون صلاحيات مدير |
+| ماك (Apple Silicon) | [`PDFMerger-11.0.0-macOS-arm64.dmg`](https://github.com/faisalmb/pdf-toolkit/releases/latest/download/PDFMerger-11.0.0-macOS-arm64.dmg) | افتحه واسحب **PDFMerger** إلى **Applications** |
+| لينكس (x86_64) | [`PDFMerger-11.0.0-linux-x86_64.tar.gz`](https://github.com/faisalmb/pdf-toolkit/releases/latest/download/PDFMerger-11.0.0-linux-x86_64.tar.gz) | فك الضغط ثم شغّل `./install.sh` |
 
 ### ملاحظات ويندوز
 - يثبّت في `%LOCALAPPDATA%\Programs\PDF Merger` مع اختصار في قائمة ابدأ

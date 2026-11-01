@@ -9,6 +9,8 @@ It runs on Windows, macOS and Linux.
 
 Built with Python, PyQt5 and PyMuPDF. Version 11.0.0.
 
+**[⬇️ Download the latest release](https://github.com/faisalmb/pdf-toolkit/releases/latest)**: [Windows](https://github.com/faisalmb/pdf-toolkit/releases/latest/download/PDFMerger-Setup-11.0.0.exe) · [macOS](https://github.com/faisalmb/pdf-toolkit/releases/latest/download/PDFMerger-11.0.0-macOS-arm64.dmg) · [Linux](https://github.com/faisalmb/pdf-toolkit/releases/latest/download/PDFMerger-11.0.0-linux-x86_64.tar.gz)
+
 ---
 
 ## Contents
@@ -78,14 +80,14 @@ Built with Python, PyQt5 and PyMuPDF. Version 11.0.0.
 
 ## Download and install
 
-Ready-made packages are published automatically on the **Releases** page
+Ready-made packages are published automatically on the **[Releases](https://github.com/faisalmb/pdf-toolkit/releases)** page
 with every update (see [Automatic builds](#automatic-builds-github-actions)).
 
 | System | File | Install |
 |---|---|---|
-| Windows 10/11 (x64) | `PDFMerger-Setup-11.0.0.exe` | Run it. It installs for the current user, so no admin rights are needed. |
-| macOS (Apple Silicon) | `PDFMerger-11.0.0-macOS-arm64.dmg` | Open it and drag **PDFMerger** into **Applications**. |
-| Linux (x86_64) | `PDFMerger-11.0.0-linux-x86_64.tar.gz` | Extract it and run `./install.sh`. |
+| Windows 10/11 (x64) | [`PDFMerger-Setup-11.0.0.exe`](https://github.com/faisalmb/pdf-toolkit/releases/latest/download/PDFMerger-Setup-11.0.0.exe) | Run it. It installs for the current user, so no admin rights are needed. |
+| macOS (Apple Silicon) | [`PDFMerger-11.0.0-macOS-arm64.dmg`](https://github.com/faisalmb/pdf-toolkit/releases/latest/download/PDFMerger-11.0.0-macOS-arm64.dmg) | Open it and drag **PDFMerger** into **Applications**. |
+| Linux (x86_64) | [`PDFMerger-11.0.0-linux-x86_64.tar.gz`](https://github.com/faisalmb/pdf-toolkit/releases/latest/download/PDFMerger-11.0.0-linux-x86_64.tar.gz) | Extract it and run `./install.sh`. |
 
 ### Windows notes
 - The installer puts the app in `%LOCALAPPDATA%\Programs\PDF Merger`, adds a
