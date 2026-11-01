@@ -78,8 +78,8 @@ Built with Python, PyQt5 and PyMuPDF. Version 11.0.0.
 
 ## Download and install
 
-Ready-made packages are published on the **Releases** page when a version
-tag is pushed (see [Automatic builds](#automatic-builds-github-actions)).
+Ready-made packages are published automatically on the **Releases** page
+with every update (see [Automatic builds](#automatic-builds-github-actions)).
 
 | System | File | Install |
 |---|---|---|
@@ -178,15 +178,16 @@ a folder build (onedir) without UPX.
 ### Automatic builds (GitHub Actions)
 
 [`.github/workflows/build.yml`](.github/workflows/build.yml):
-- On every push and pull request, it runs the headless tests on Linux.
-- On a version tag, it builds all three packages and attaches them to a
-  GitHub Release:
-  ```bash
-  git tag v11.0.0
-  git push origin v11.0.0
-  ```
+- **Every push to `main`** runs the tests, then builds all three packages
+  and publishes them as a new GitHub Release tagged
+  `v11.0.0-build.<run number>`. That release becomes the latest one.
+- Pushing a version tag (`git tag v11.0.0 && git push origin v11.0.0`)
+  publishes a release named after that tag instead.
+- Pull requests only run the tests. Commits that change only `.md` files
+  don't trigger a build.
 - You can also run it by hand from **Actions → build → Run workflow**. The
-  packages then appear as workflow artifacts.
+  packages then appear as workflow artifacts, and no release is made.
+- The version number comes from `APP_VERSION` in `PDFMerger.spec`.
 
 ---
 

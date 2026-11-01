@@ -68,7 +68,7 @@
 
 ## التنزيل والتثبيت
 
-الحزم الجاهزة تُنشر في صفحة **Releases** عند رفع وسم إصدار
+الحزم الجاهزة تُنشر تلقائيًا في صفحة **Releases** مع كل تحديث
 (انظر [البناء التلقائي](#البناء-التلقائي-github-actions)).
 
 | النظام | الملف | التثبيت |
@@ -154,13 +154,14 @@ PyInstaller لا يبني لنظام آخر، فكل حزمة تُبنى على 
 ### البناء التلقائي (GitHub Actions)
 
 [`.github/workflows/build.yml`](.github/workflows/build.yml):
-- كل push أو pull request يشغّل الاختبارات على لينكس.
-- وسم الإصدار يبني الحزم الثلاث ويرفقها في GitHub Release:
-  ```bash
-  git tag v11.0.0
-  git push origin v11.0.0
-  ```
-- أو يدويًا من **Actions ← build ← Run workflow** (الحزم تظهر كـ Artifacts).
+- **كل push إلى `main`** يشغّل الاختبارات، ثم يبني الحزم الثلاث وينشرها في
+  GitHub Release جديد بوسم `v11.0.0-build.<رقم التشغيل>`، ويصبح هو الأحدث.
+- رفع وسم إصدار (`git tag v11.0.0 && git push origin v11.0.0`) ينشر إصدارًا
+  باسم هذا الوسم.
+- الـ pull request يشغّل الاختبارات فقط، والـ commit الذي يغيّر ملفات `.md`
+  فقط لا يشغّل البناء.
+- أو يدويًا من **Actions ← build ← Run workflow** (الحزم تظهر كـ Artifacts بدون إصدار).
+- رقم الإصدار يُقرأ من `APP_VERSION` في `PDFMerger.spec`.
 
 ---
 

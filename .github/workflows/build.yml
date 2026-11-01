@@ -1,11 +1,14 @@
-# Tests on every push, and builds Windows / macOS / Linux packages.
-# Pushing a tag like v11.0.0 also publishes the packages as a GitHub Release.
+# Every push to main: test, build Windows / macOS / Linux packages, and publish
+# them as a new GitHub Release tagged v<version>-build.<run number>.
+# Pushing a tag like v11.0.0 publishes a release on that tag instead.
+# Pull requests only run the tests. Commits that change only *.md files are skipped.
 name: build
 
 on:
   push:
     branches: [main]
     tags: ["v*"]
+    paths-ignore: ["**.md"]
   pull_request:
   workflow_dispatch:
 
@@ -33,7 +36,7 @@ jobs:
 
   build:
     needs: test
-    if: startsWith(github.ref, 'refs/tags/v') || github.event_name == 'workflow_dispatch'
+    if: github.event_name != 'pull_request'
     strategy:
       fail-fast: false
       matrix:
@@ -67,8 +70,39 @@ jobs:
           name: PDFMerger-${{ runner.os }}
           path: installer_output/*
 
-      - name: Publish release
-        if: startsWith(github.ref, 'refs/tags/v')
-        uses: softprops/action-gh-release@v2
+  # One job publishes the release after all three builds succeed,
+  # so the release is created once and always has every package.
+  release:
+    needs: build
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Release tag and title
+        id: meta
+        run: |
+          VERSION=$(sed -n "s/^APP_VERSION = '\(.*\)'/\1/p" PDFMerger.spec)
+          if [[ "$GITHUB_REF" == refs/tags/* ]]; then
+            TAG="$GITHUB_REF_NAME"
+            NAME="PDF Merger $GITHUB_REF_NAME"
+          else
+            TAG="v${VERSION}-build.${GITHUB_RUN_NUMBER}"
+            NAME="PDF Merger ${VERSION} (build ${GITHUB_RUN_NUMBER})"
+          fi
+          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
+          echo "name=$NAME" >> "$GITHUB_OUTPUT"
+
+      - uses: actions/download-artifact@v4
         with:
-          files: installer_output/*
+          path: packages
+          merge-multiple: true
+
+      - uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.meta.outputs.tag }}
+          name: ${{ steps.meta.outputs.name }}
+          target_commitish: ${{ github.sha }}
+          generate_release_notes: true
+          make_latest: "true"
+          files: packages/*
