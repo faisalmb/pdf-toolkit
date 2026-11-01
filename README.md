@@ -1,402 +1,321 @@
-# أداة دمج ملفات PDF — النسخة المحسّنة (v11)
+# PDF Merger
 
-## 📁 محتويات الحزمة
+**English** | [العربية](README.ar.md)
 
-| الملف | الوصف |
-|---|---|
-| `main_app.py` | الواجهة الرسومية الرئيسية (PyQt5) — هذا ما تشغّله للاستخدام العادي |
-| `editor.py` | محرّر التوقيع/الختم/الكتابة على الصفحة |
-| `pdf_engine.py` | منطق التعامل مع PDF (فتح، معاينة، دمج) — منفصل عن الواجهة |
-| `workers.py` | عمليات الخلفية (Threads) لتوليد المعاينات والدمج دون تجميد الواجهة |
-| `i18n.py` | نظام الترجمة: كل نصوص الواجهة بالعربي والإنجليزي + منطق التبديل بينهما |
-| `theme.py` | الهوية البصرية: الألوان، الخط، وتنسيق كل عناصر الواجهة (QSS) |
-| `test_headless.py` | اختبار آلي شامل يتحقق من كل الوظائف بما فيها اللغة ونسبة الضغط |
-| `requirements.txt` | قائمة المكتبات المطلوبة |
-| `PDFMerger.spec` | ملف بناء PyInstaller (مجلد البرنامج) |
-| `installer.iss` | ملف Inno Setup لبناء برنامج التثبيت |
-| `version_info.txt`, `app_icon.ico` | معلومات الإصدار والأيقونة المضمّنة في الـ exe |
-| `build_exe.bat` | سكربت بضغطة واحدة يبني البرنامج وبرنامج التثبيت (ويندوز) |
-| `build_mac.sh` | يبني `PDFMerger.app` وملف `.dmg` (يُشغَّل على ماك) |
-| `build_linux.sh`, `packaging/linux/` | يبني نسخة لينكس `.tar.gz` مع سكربت تثبيت (يُشغَّل على لينكس) |
-| `.github/workflows/build.yml` | اختبار تلقائي، وبناء النسخ الثلاث على GitHub Actions |
-| `make_test_fixtures.py` | ينشئ ملفات PDF التي يحتاجها الاختبار |
-| `LICENSE` | ترخيص MIT |
+A desktop app for merging PDF files and images, arranging their pages, and
+signing, stamping or annotating them before saving one clean PDF.
+The interface is bilingual: Arabic (right to left) and English (left to right).
+It runs on Windows, macOS and Linux.
+
+Built with Python, PyQt5 and PyMuPDF. Version 11.0.0.
 
 ---
 
-## 🚀 بناء برنامج التثبيت (Setup) على ويندوز
+## Contents
 
-### مرة واحدة فقط
-1. ثبّت بايثون من [python.org/downloads](https://www.python.org/downloads/)
-   مع تفعيل **"Add Python to PATH"**.
-2. ثبّت Inno Setup 6 (مجاني):
-   ```bash
-   winget install JRSoftware.InnoSetup
-   ```
-
-### البناء
-شغّل `build_exe.bat`. الناتج:
-- `installer_output\PDFMerger-Setup-11.0.0.exe` ← **هذا ما توزّعه.**
-- `dist\PDFMerger\PDFMerger.exe` ← نسخة جاهزة بدون تثبيت (المجلد كاملًا).
-
-### ماذا يفعل برنامج التثبيت؟
-- يثبّت **للمستخدم الحالي فقط** في `%LOCALAPPDATA%\Programs\PDF Merger`، فلا
-  يحتاج صلاحيات مدير ولا يظهر طلب UAC.
-- اختصار في قائمة ابدأ (واختياريًا على سطح المكتب)، وإزالة من "التطبيقات المثبّتة".
-- واجهة التثبيت بالعربي أو الإنجليزي.
-
-### 🛡️ عن حظر Windows Security
-- النسخة القديمة كانت ملفًا واحدًا (onefile) مضغوطًا بـ UPX، وهذا أكثر ما يجعل
-  Windows Defender يعتبر برامج بايثون المجمّعة مشبوهة **خطأً**. النسخة الحالية
-  مجلد عادي (onedir) بدون UPX ومعها معلومات ناشر وإصدار وأيقونة، وفحصها
-  Defender على جهاز البناء بدون أي تهديد (البرنامج وبرنامج التثبيت).
-- **SmartScreen** ("Windows protected your PC") قد يظهر عند تشغيل ملف التثبيت
-  **بعد تنزيله من الإنترنت** لأنه غير موقّع رقميًا؛ يُتجاوز بـ "More info" ثم
-  "Run anyway". الملف المنسوخ عبر فلاشة أو شبكة محلية لا يظهر له عادة.
-- **Smart App Control** (ويندوز 11) إن كان مفعّلًا يمنع أي برنامج غير موقّع
-  بلا خيار تجاوز.
-- **الحل النهائي** لإزالة كل هذه التحذيرات: توقيع رقمي (مثل Azure Trusted
-  Signing أو شهادة Code Signing)، أو النشر عبر Microsoft Store (المتجر يوقّع
-  الحزمة بنفسه).
-- لو اعتبره Defender مشبوهًا خطأً على جهاز ما، يمكن إرساله لمايكروسوفت
-  لمراجعته كـ "false positive" عبر:
-  https://www.microsoft.com/wdsi/filesubmission
+- [Features](#features)
+- [Download and install](#download-and-install)
+- [Using the app](#using-the-app)
+- [Run from source](#run-from-source)
+- [Building packages](#building-packages)
+- [Project structure](#project-structure)
+- [How it works](#how-it-works)
+- [Testing](#testing)
+- [Version history](#version-history)
+- [License](#license)
 
 ---
 
-## 🍎 نسخة ماك ولينكس
+## Features
 
-PyInstaller لا يبني لنظام آخر، فكل نسخة تُبنى على نظامها. الطريقة الأسهل
-بدون جهاز ماك أو لينكس: **GitHub Actions** يبنيها تلقائيًا على خوادم GitHub.
+**Files and pages**
+- Add PDF files and images (PNG, JPG, BMP, GIF, TIFF, WebP) with a button or by
+  drag and drop. Each image becomes a full page.
+- Choose a page range per file, such as `1-3,5`. The range is checked as you type.
+- See every page as a thumbnail and reorder by dragging, or with the
+  Start / Back / Forward / End buttons.
+- Rotate, duplicate and delete pages, and undo the last delete.
+- Insert pages from another PDF or from images before or after any page.
+- Reorder whole files. Your page edits are kept when you add files,
+  change ranges or reorder.
 
-### تلقائيًا (GitHub Actions)
-- كل رفع (push) يشغّل الاختبار الآلي على لينكس.
-- رفع وسم إصدار يبني النسخ الثلاث وينشرها في صفحة Releases:
-  ```bash
-  git tag v11.0.0
-  git push origin v11.0.0
-  ```
-- أو من تبويب **Actions** ← `build` ← **Run workflow** (النسخ تظهر كـ Artifacts).
+**Sign, stamp and write on pages**
+- An interactive page editor opens from a page's right-click menu.
+- Place a signature or stamp image, or a text box. Drag to move, and drag the
+  corner handle to resize.
+- Text options: font (Helvetica, Times, Courier, and bundled Arabic fonts
+  Amiri and Cairo), size from 6 to 200, colour, and editable content.
+  Arabic text is shaped and ordered correctly, including mixed Arabic and
+  English text.
+- **Remove area**: drag a rectangle to truly delete everything inside it in
+  the output (a redaction, not just a cover). The app fills the area with the
+  surrounding background colour, so no white box is left.
+- Zoom up to 400% and pan by dragging.
+- Stamps stay in the right place on rotated pages and on any page size.
 
-### يدويًا
-- **ماك**: `./build_mac.sh` ← `installer_output/PDFMerger-11.0.0-macOS-arm64.dmg`
-  (يُبنى لمعمارية الجهاز الذي يبنيه: Apple Silicon أو Intel).
-- **لينكس**: `./build_linux.sh` ← `installer_output/PDFMerger-11.0.0-linux-x86_64.tar.gz`.
-  للتثبيت: فك الضغط ثم `./install.sh` (للمستخدم الحالي، بدون sudo، ويضيفه
-  لقائمة التطبيقات). للإزالة: `./uninstall.sh`.
+**Saving**
+- Four compression levels: None, Light, Medium and Strong. They lower the
+  resolution and JPEG quality of images inside the PDF.
+- A progress window shows each stage (collecting pages, stamps, compressing,
+  saving), and you can cancel it.
+- When it finishes, the app shows the size before and after and the saving
+  in percent. Buttons open the file or its folder.
+- The output file is suggested a unique name such as
+  `PDF_20261101_141210_k3x9.pdf`.
+- Atomic save: the app writes a temporary file and then swaps it in, so a crash
+  never leaves a half-written PDF.
 
-### ملاحظات
-- **ماك**: التطبيق غير موقّع، فأول تشغيل: كليك يمين على التطبيق ← **Open** ←
-  **Open**. الحل النهائي توقيع Apple Developer وتوثيقه (notarization).
-- **لينكس**: يحتاج مكتبات Qt المعتادة للنظام الرسومي، وهي موجودة في أغلب
-  التوزيعات المكتبية. لو لم يفتح على Ubuntu/Debian:
+**Comfort and speed**
+- Thumbnails are drawn in a low-priority background thread, so the window
+  never freezes. Placeholder cards and a progress bar show while they load.
+- A splash screen appears as soon as you launch the app.
+- Each file is opened only once. Thumbnails are kept in a small cache of
+  about 20 MB.
+- Encrypted or broken files are rejected when you add them, with a clear
+  reason.
+
+---
+
+## Download and install
+
+Ready-made packages are published on the **Releases** page when a version
+tag is pushed (see [Automatic builds](#automatic-builds-github-actions)).
+
+| System | File | Install |
+|---|---|---|
+| Windows 10/11 (x64) | `PDFMerger-Setup-11.0.0.exe` | Run it. It installs for the current user, so no admin rights are needed. |
+| macOS (Apple Silicon) | `PDFMerger-11.0.0-macOS-arm64.dmg` | Open it and drag **PDFMerger** into **Applications**. |
+| Linux (x86_64) | `PDFMerger-11.0.0-linux-x86_64.tar.gz` | Extract it and run `./install.sh`. |
+
+### Windows notes
+- The installer puts the app in `%LOCALAPPDATA%\Programs\PDF Merger`, adds a
+  Start menu shortcut (and an optional desktop one) and an uninstaller in
+  *Installed apps*. Its wizard is available in Arabic or English.
+- The app is built as a normal folder (not a single self-extracting exe) and
+  without UPX compression. This avoids the most common reason Windows
+  Defender wrongly flags Python apps.
+- The installer is not code-signed, so **SmartScreen** may show
+  "Windows protected your PC" after you download it. Click **More info**, then
+  **Run anyway**. If **Smart App Control** is on, Windows 11 blocks unsigned
+  apps with no way to allow them.
+- Signing the installer (for example with Azure Trusted Signing or a code
+  signing certificate) or publishing in the Microsoft Store removes these
+  warnings. You can report a Defender false positive at
+  <https://www.microsoft.com/wdsi/filesubmission>.
+
+### macOS notes
+- The app is not signed or notarised. The first time, right-click
+  **PDFMerger** in Applications, choose **Open**, then **Open** again.
+- The automatic build targets Apple Silicon. For an Intel Mac, build it on
+  an Intel Mac with `./build_mac.sh`.
+
+### Linux notes
+- `install.sh` installs into `~/.local/share/pdfmerger` and adds a menu entry,
+  with no `sudo` needed. Remove it with `./uninstall.sh`.
+- It needs the usual Qt/X11 libraries found on desktop distributions. If it
+  does not start on Ubuntu or Debian:
   ```bash
   sudo apt install libxcb-xinerama0 libxkbcommon-x11-0 libxcb-icccm4 libxcb-image0 libxcb-keysyms1 libxcb-render-util0
   ```
 
 ---
 
-## 📄 الترخيص
+## Using the app
 
-كود المشروع مرخّص بـ [MIT](LICENSE). المكونات الخارجية لها تراخيصها:
-الخطوط Amiri وCairo بترخيص SIL OFL 1.1، وPyMuPDF بترخيص AGPL v3، وPyQt5
-بترخيص GPL v3. لذلك النسخ المجمّعة (exe/dmg/tar.gz) تخضع عمليًا لشروط
-AGPL/GPL، وهذا لا يمنع توزيعها مجانًا ما دام الكود المصدري متاحًا للعموم.
+1. **Add files**: use **Add files**, **Add images as pages**, or drop files on
+   the window.
+2. **Set ranges** (optional): pick a file in the files panel and set its page
+   range. The default is all pages.
+3. **Arrange pages**: drag thumbnails, or select a page and use the
+   arrow buttons under the preview.
+4. **Edit pages**: right-click a page to rotate, duplicate, delete, insert
+   pages before or after it, or open **Sign / Stamp / Write**. Pages with
+   stamps show a ✍️ mark.
+5. **Choose compression** with the slider.
+6. **Save**. Pick a location, watch the progress, then open the file or folder.
+
+The language button at the top switches between Arabic and English at once,
+including the layout direction.
 
 ---
 
-## 🧪 طريقة بديلة: التشغيل المباشر بدون بناء (أي نظام)
+## Run from source
+
+Requires Python 3.10 or newer.
 
 ```bash
 pip install -r requirements.txt
-python main_app.py
+python launcher.py      # with splash screen
+# or
+python main_app.py      # straight to the main window
 ```
 
----
-
-## ✅ التحسينات المُطبَّقة في هذه النسخة (مقارنة بالأصلية)
-
-### إصلاحات الأداء والموثوقية
-1. **فتح كل ملف مرة واحدة فقط** بدل فتح/قفل متكرر لكل صفحة (تحسين أداء
-   كبير مع الملفات الكبيرة).
-2. **كاش للمصغّرات (Thumbnail Cache)** يمنع إعادة توليد نفس صورة الصفحة
-   أكثر من مرة.
-3. **توليد المعاينات في خيط خلفية منفصل (QThread)** بدل توليدها بشكل
-   متزامن في واجهة المستخدم — الواجهة الآن لا تتجمد أبدًا أثناء معالجة
-   ملفات كبيرة.
-4. **عملية الدمج نفسها أيضًا تعمل في الخلفية** مع شريط تقدم حي وإمكانية
-   إلغاء حقيقية دون ترك ملف ناقص على القرص.
-5. **حفظ آمن (atomic save)**: يُكتب الملف الناتج أولًا بامتداد مؤقت `.tmp`
-   ثم يُستبدل دفعة واحدة، لتفادي ملف PDF تالف لو انقطع التشغيل أثناء الحفظ.
-
-### معالجة أخطاء أفضل
-6. **فحص الملف فور إضافته**: يتحقق البرنامج مباشرة هل الملف PDF صالح، وهل
-   محمي بكلمة سر — بدل اكتشاف المشكلة متأخرًا أثناء المعاينة أو الدمج.
-7. **التحقق من صحة نطاق الصفحات داخل نافذة الإدخال نفسها** (مثل `1-3,5`)
-   قبل قبولها، مع رسالة خطأ عربية واضحة بدل رسالة بايثون مبهمة.
-8. **تسجيل الأخطاء (logging)** بدل تجاهلها صامتة (`except: pass`)، مما
-   يسهّل تشخيص أي مشكلة مستقبلية.
-
-### تجربة استخدام محسّنة
-9. **زر "تراجع عن آخر حذف" (Undo)** لاستعادة صفحة حُذفت بالخطأ.
-10. **عرض حجم الملف الناتج** بعد انتهاء الدمج بنجاح.
-11. **شريط تقدم نصي أثناء توليد المعاينات** يظهر "X من Y" بدل واجهة بلا
-    أي مؤشر.
-12. **إغلاق نظيف لكل الموارد** (ملفات PDF المفتوحة وخيوط المعالجة) عند
-    إغلاق البرنامج.
-
-### بنية الكود
-13. **فصل منطق PDF عن الواجهة** (`pdf_engine.py` منفصل عن `main_app.py`)
-    — يسهّل الصيانة، الاختبار، وإعادة الاستخدام مستقبلًا (مثلًا لو احتجت
-    نسخة بدون واجهة رسومية لاحقًا).
-14. **اختبار آلي شامل** (`test_headless.py`) يحاكي استخدامًا حقيقيًا:
-    إضافة ملفات، تحديد نطاقات، توليد معاينات، تدوير، تكرار، حذف، تراجع،
-    ثم دمج فعلي والتحقق من الملف الناتج — تم تشغيله والتأكد من نجاح كل
-    خطوة فيه.
+Dependencies (`requirements.txt`): PyQt5, PyMuPDF, arabic-reshaper and
+python-bidi.
 
 ---
 
-## 🆕 الإضافات الجديدة في v4
+## Building packages
 
-### 🌐 واجهة ثنائية اللغة (عربي / إنجليزي)
-- زر تبديل يدوي في أعلى الواجهة (يمين/يسار حسب اللغة الحالية) يبدّل
-  **كل** نصوص البرنامج فورًا دون إعادة تشغيل: الأزرار، العناوين،
-  الرسائل، حتى اتجاه الواجهة نفسها (RTL للعربي، LTR للإنجليزي).
-- كل النصوص مُدارة من ملف واحد (`i18n.py`) — لو أردت تعديل أي نص أو
-  إضافة لغة ثالثة مستقبلًا، التعديل يكون في مكان واحد فقط.
+PyInstaller can't cross-compile, so build each system's package on that
+system. Every build uses [`PDFMerger.spec`](PDFMerger.spec), which produces
+a folder build (onedir) without UPX.
 
-### 🔤 تحسين عرض الخط العربي
-- تم اعتماد خط **Segoe UI** كخط أساسي (مع Tahoma ثم Arial كخطوط
-  احتياطية). هذا الخط مُدمج في كل نسخ ويندوز 10/11 ويعرض العربية بوضوح
-  وجودة عالية دون الحاجة لتثبيت أي خط خارجي إضافي — يضمن نفس الشكل
-  الجيد على أي جهاز ويندوز يُشغَّل عليه الـ exe.
+| System | Command | Output |
+|---|---|---|
+| Windows | `build_exe.bat` | `installer_output\PDFMerger-Setup-11.0.0.exe` and `dist\PDFMerger\` |
+| macOS | `./build_mac.sh` | `installer_output/PDFMerger-11.0.0-macOS-<arch>.dmg` and `dist/PDFMerger.app` |
+| Linux | `./build_linux.sh` | `installer_output/PDFMerger-11.0.0-linux-<arch>.tar.gz` and `dist/PDFMerger/` |
 
-### 📉 عرض نسبة الضغط الفعلية
-- عند تفعيل خيار "ضغط الملف الناتج"، تُحسب الآن **نسبة تصغير حقيقية**
-  (وليست تقديرية): يُحفظ الملف أولًا بدون ضغط لقياس الحجم الأصلي، ثم
-  يُحفظ بالضغط الفعلي، ويُعرض للمستخدم: الحجم قبل، الحجم بعد، ونسبة
-  التصغير المئوية — في نفس رسالة "تم بنجاح".
+- **Windows** also needs [Inno Setup 6](https://jrsoftware.org/isinfo.php)
+  for the installer (`winget install JRSoftware.InnoSetup`). Without it the
+  script builds only the app folder.
+- **macOS** needs Pillow (the script installs it) to turn `app_icon.png` into
+  an `.icns` icon.
+- Keep the `fonts/` folder next to the spec. If it is missing the build still
+  works, but the Arabic fonts are not bundled.
 
-### 🎨 هوية بصرية جديدة بالكامل
-- نظام ألوان مستقل (`theme.py`) بلون أساسي عنابي دافئ بدل الأحمر
-  التقليدي، مع بطاقات بيضاء بحواف مدورة وحدود واضحة فوق خلفية رمادية
-  فاتحة هادئة، وألوان مخصصة لكل نوع زر (أساسي / تحذيري / ثانوي خفيف).
-- **ترتيب الأزرار أعيد تنظيمه**: الإجراء الأهم ("إضافة ملفات") هو الزر
-  البارز الوحيد بلون معبأ، تليه الإجراءات الثانوية، مع فصل بصري واضح
-  (خط فاصل) بين أزرار "الترتيب" وزر "الحذف" في لوحة الملفات حتى لا
-  يضغط المستخدم زر حذف بالخطأ مكان زر ترتيب.
-- **تحسين منطقة المعاينة (Page Preview)**: تم إصلاح مشكلة تراكب بطاقات
-  الصفحات (كانت تظهر متراكبة فوق بعضها عند تكرار/حذف صفحات) عبر تحديد
-  حجم خانة (Grid) ثابت ومناسب، فصارت كل بطاقة منظمة ومستقلة بحدودها مع
-  اسم الملف ورقم الصفحة واضحين أسفلها دائمًا.
-- **شريط حالة سفلي جديد** يعرض عدد الملفات وعدد الصفحات الحالية بشكل
-  دائم.
-- تم التحقق بصريًا من كل هذه التحسينات عبر لقطات شاشة فعلية للتطبيق
-  الحقيقي (بكلتا اللغتين)، وليس فقط بالقراءة البرمجية للكود.
+### Automatic builds (GitHub Actions)
+
+[`.github/workflows/build.yml`](.github/workflows/build.yml):
+- On every push and pull request, it runs the headless tests on Linux.
+- On a version tag, it builds all three packages and attaches them to a
+  GitHub Release:
+  ```bash
+  git tag v11.0.0
+  git push origin v11.0.0
+  ```
+- You can also run it by hand from **Actions → build → Run workflow**. The
+  packages then appear as workflow artifacts.
 
 ---
 
-## 🆕 الإضافات الجديدة في v5
+## Project structure
 
-### 🎚️ التحكم بقوة الضغط (شريط متدرج)
-- بدل خانة اختيار بسيطة (ضغط/بدون)، صار فيه **شريط متدرج (slider)**
-  بأربع درجات: بدون / خفيف / متوسط / قوي.
-- كل درجة تتحكم فعليًا بدقة الصور داخل الملف (DPI) وجودة JPEG:
-  كلما زادت القوة، صغُر الحجم أكثر مقابل جودة صور أقل.
-- شارة ملوّنة بجانب الشريط تعرض الدرجة المختارة، ورسالة "تم بنجاح"
-  بعد الدمج تذكر اسم درجة الضغط ونسبة التصغير الفعلية.
-- *مثال فعلي من الاختبار*: ملف فيه صورة كبيرة نزل من ٧٢٤ كيلوبايت إلى
-  ٣٤٢ (خفيف) ← ٢٤٧ (متوسط) ← ١٨٠ (قوي).
-
-### 🖼️ إضافة صور كصفحات + إدراج في أي موضع
-- زر جديد **"إضافة صور كصفحات"** يحوّل أي صورة (PNG/JPG/إلخ) إلى صفحة
-  PDF كاملة وتُضاف لخطة الدمج. يمكن أيضًا سحب وإفلات الصور مباشرة.
-- من قائمة الكليك-يمين على أي صفحة: **"إدراج صفحات قبلها/بعدها"** —
-  يفتح لك اختيار ملف PDF أو صور وتُدرج صفحاتها في الموضع المحدد بالضبط
-  (وليس فقط في نهاية القائمة).
-- الحذف والتكرار والترتيب بالسحب موجودة كما كانت، فصار عندك تحكم كامل
-  بترتيب الصفحات داخل الملف الناتج.
-
-### ✍️ التوقيع / الختم / الكتابة على الصفحات (محرّر تفاعلي)
-- من قائمة الكليك-يمين على أي صفحة: **"توقيع / ختم / كتابة"** يفتح
-  محرّرًا تفاعليًا يعرض الصفحة بحجم كبير مع لوحة خصائص جانبية.
-- **توقيع أو ختم**: تختار صورة (توقيعك أو ختم رسمي) فتظهر على الصفحة.
-- **كتابة نص**: تكتب النص فيظهر على الصفحة.
-- **تحريك وتغيير الحجم بالماوس**: أي عنصر (صورة أو نص) يمكن:
-  - **سحبه** بالماوس لأي موضع على الصفحة.
-  - **تغيير حجمه** بسحب المقبض المربّع في زاويته السفلية (للصور يغيّر
-    الأبعاد، وللنص يغيّر حجم الخط).
-- **خصائص النص الكاملة**: عند تحديد نص، تظهر لوحة جانبية للتحكم بـ:
-  - **نوع الخط**: Helvetica / Times / Courier (عادي وغامق).
-  - **حجم الخط**: من ٦ إلى ٢٠٠.
-  - **اللون**: منتقي ألوان كامل.
-  - **تعديل المحتوى**: تغيير النص نفسه مباشرة.
-- يمكن إضافة عدة عناصر على نفس الصفحة، وحذف المحدد منها، أو مسح الكل.
-  كلها تظهر كمعاينة حية فوق الصفحة قبل التطبيق، والصفحات الموقّعة
-  تُعلَّم بإشارة ✍️.
-- المواضع والأحجام تُخزّن كنسب مئوية من أبعاد الصفحة, فتبقى دقيقة عند
-  الدمج مهما كان حجم الصفحة الأصلي.
+| Path | Purpose |
+|---|---|
+| `launcher.py` | Entry point for packaged builds: shows the splash, then loads the app |
+| `main_app.py` | Main window: files panel, page grid, toolbar, save flow |
+| `editor.py` | Sign / stamp / write / remove-area page editor |
+| `pdf_engine.py` | All PDF work (open, probe, render, merge, stamp, compress), with no UI |
+| `workers.py` | Background threads for thumbnails and merging |
+| `dialogs.py` | Styled message boxes and the staged progress window |
+| `splash.py` | Splash screen |
+| `theme.py` | Colours, fonts and the Qt stylesheet |
+| `i18n.py` | All UI text in Arabic and English, and the direction switch |
+| `resources.py` | Finds bundled files (fonts, icon) in source and packaged runs |
+| `fonts/` | Bundled Amiri and Cairo fonts |
+| `test_headless.py`, `make_test_fixtures.py` | End-to-end tests and their sample PDFs |
+| `PDFMerger.spec` | PyInstaller build for all platforms |
+| `build_exe.bat`, `installer.iss`, `version_info.txt` | Windows build and Inno Setup installer |
+| `build_mac.sh` | macOS `.app` and `.dmg` |
+| `build_linux.sh`, `packaging/linux/` | Linux tarball, `.desktop` entry, install and uninstall scripts |
+| `app_icon.ico`, `app_icon.png` | App icon (Windows; macOS and Linux) |
 
 ---
 
-## 🆕 تحسينات v7
+## How it works
 
-- **إصلاح حفظ التواقيع المتعددة**: كانت العناصر الجديدة (الاسم + التوقيع)
-  تُوضع كلها في نفس الموضع تمامًا فتتكدّس فوق بعضها، مما يجعلها تبدو
-  وكأن "آخر تعديل فقط هو المحفوظ". الآن كل عنصر جديد يُوضع بموضع متدرّج
-  مختلف، وكلها تُحفظ وتظهر بوضوح. (حقل النص يُمسح تلقائيًا بعد كل إضافة
-  لتفادي التكرار غير المقصود).
-- **زوم في محرّر التوقيع/الختم/الكتابة**: أزرار 🔍− / 🔍+ / إعادة ضبط
-  مع عرض نسبة التكبير، تتيح تكبير الصفحة (حتى ٤٠٠٪) لوضع العنصر في
-  مكانه الدقيق، مع أشرطة تمرير للتنقل في الصفحة المكبّرة.
-- **اسم ملف عشوائي عند الحفظ**: نافذة الحفظ تقترح تلقائيًا اسمًا فريدًا
-  بصيغة `PDF_التاريخ_الوقت_لاحقة.pdf` بدل ترك الحقل فارغًا — يمكنك قبوله
-  أو تغييره.
-- **إعادة تسمية الزر**: زر "🔗 دمج الملفات" صار "💾 حفظ الملف".
-
----
-
-## 🆕 تحسينات v11 (الأداء وحفظ التعديلات والواجهة)
-
-### 🐛 إصلاحات
-- **التعديلات لم تعد تضيع**: إضافة ملف أو تغيير نطاق أو ترتيب الملفات كان يعيد
-  بناء كل الصفحات فيمسح الدوران والتكرار والترتيب اليدوي **والتواقيع**. الآن
-  يتغيّر فقط ما يخص الملف المعني، وكل تعديلاتك تبقى.
-- **التراجع عن الحذف** يعيد الصفحة كما كانت تمامًا (مع توقيعها).
-- **منع الانهيار**: PyMuPDF لا يتحمّل العمل من خيطين معًا؛ صار كل وصول للملفات
-  يمر عبر قفل واحد (المعاينات + الدمج + الواجهة).
-- لا تبقى ملفات `.tmp` على القرص إذا فشل الحفظ.
-
-### ⚡ أخف على الجهاز
-- المصغّرات تُرسم مباشرة بحجمها النهائي كبكسلات خام (بدون ضغط PNG ثم فكّه
-  وتصغيره مرة أخرى)، وبأولوية منخفضة للخيط، وكاش محدود (~٢٠ ميجابايت).
-- إدراج صفحات لم يعد يجمّد الواجهة (المصغّرات في الخلفية)، والتدوير يدوّر
-  الصورة الموجودة بدل إعادة رسم الصفحة.
-- محرّر التوقيع لا يعيد تحجيم صورة الختم مع كل حركة ماوس.
-- الضغط يحفظ الملف **مرة واحدة** بدل مرتين؛ حجم "قبل" يُقدَّر من جدول كائنات
-  الـ PDF (الفرق عن الحفظ الفعلي أقل من ١٪ في الملفات العادية).
-- حجم النص في معاينة المحرّر صار يطابق الناتج لأي مقاس صفحة (كان يفترض A4).
-
-### 🎨 الواجهة
-- شريط أدوات بصف واحد، وأزرار الحذف/التفريغ انتقلت للوحة الملفات.
-- كل ملف يعرض عدد صفحاته ونطاقه، وكل بطاقة صفحة تعرض اسم الملف ورقم الصفحة.
-- حالة فارغة إرشادية، وشارة تقدّم المعاينات، وزر الحفظ معطّل حتى توجد صفحات.
-- إزالة الصبغة الزرقاء عن الصفحة المحددة.
-- **نافذة تقدّم بمراحل** عند الحفظ: تجميع الصفحات (بنسبة مئوية) ← التواقيع ←
-  ضغط الصور ← الحفظ، مع شريط متحرك في المراحل غير محددة المدة بدل شريط واقف.
-- **رسائل بتصميم التطبيق** (`dialogs.py`) بدل صناديق ويندوز: شارة ملوّنة، بطاقة
-  تفاصيل، ورسالة نجاح فيها أزرار "فتح الملف" و"فتح المجلد".
-- **تحميل أوضح**: بطاقات هيكلية مكان المعاينات حتى تجهز مع شريط تقدّم،
-  وشاشة بداية (`splash.py` عبر `launcher.py`) تظهر فورًا عند فتح البرنامج.
+- **UI and engine are separate.** `pdf_engine.PdfEngine` has no Qt widgets.
+  The window builds a list of page references (file, page, rotation) and
+  stamp specs, and hands them to the engine.
+- **One lock for PyMuPDF.** PyMuPDF is not thread-safe. Every document access
+  goes through one re-entrant lock, held for the whole merge.
+- **Thumbnails.** A `ThumbnailWorker` QThread takes a queue of jobs. It renders
+  each page as raw RGB pixels at its final size, turns them into a `QImage` in
+  the worker, and caches the result in an LRU cache of 200 items.
+- **Edits that survive.** Each page card has a stable id. Adding files or
+  changing ranges updates only the affected file's pages, so rotation,
+  duplicates, manual order and stamps stay in place.
+- **Stamps.** Positions are stored as fractions of the page size. On save,
+  they go through the page's derotation matrix, so they land correctly on
+  rotated pages.
+- **Compression.** PyMuPDF `rewrite_images` re-encodes only images above the
+  target DPI. The "before" size is estimated from the xref table, so the file
+  is saved only once.
+- **Arabic text.** `arabic-reshaper` and `python-bidi` prepare the text, which
+  is then written with an embedded Amiri or Cairo font.
 
 ---
 
-## 🆕 تحسينات v10 (إصلاحات مهمة)
+## Testing
 
-### 🐛 إصلاح: الملف الناتج كان يظهر فارغًا مع خطأ "insufficient data for an image"
-- **السبب**: عند تفعيل الضغط، كانت طريقة إعادة ترميز الصور القديمة تستبدل
-  بيانات الصورة بـ JPEG دون تحديث بيانات الفلتر (`/Filter`) في الملف،
-  فيصبح الملف تالفًا ويظهر فارغًا.
-- **الحل**: استُبدلت بالواجهة الرسمية `rewrite_images` من PyMuPDF التي
-  تعيد ترميز الصور بأمان مع تحديث كل البيانات الوصفية بشكل صحيح. تم
-  اختبار كل مستويات الضغط (خفيف/متوسط/قوي) على ملفات فيها صور والتأكد
-  أن الناتج **سليم وقابل للعرض دائمًا**، مع ضغط ممتاز (مثلًا صورة من
-  ١.٤ ميجابايت نزلت إلى ١١ كيلوبايت دون أي تلف).
+`test_headless.py` runs the real app without a screen and acts like a user:
+- adds valid and invalid files, and sets ranges
+- waits for thumbnails, then rotates, duplicates, deletes and undoes pages
+- checks that edits survive re-syncs
+- merges at every compression level
+- applies image, text and Arabic stamps, including on rotated pages
+- runs redaction, cancels a merge, rejects encrypted files, and switches
+  language
 
-### 🔄 إصلاح: اتجاه أسهم ترتيب الصفحات كان معكوسًا
-- استُبدلت الأسهم المجرّدة (← →) بأزرار بنصوص صريحة: **"البداية"،
-  "للخلف"، "للأمام"، "النهاية"** — فلم يعد هناك أي لبس في الاتجاه بين
-  الوضع العربي (RTL) والإنجليزي (LTR). كل زر يفعل ما يقوله نصه بالضبط.
+```bash
+python make_test_fixtures.py
+QT_QPA_PLATFORM=offscreen python test_headless.py
+```
 
----
-
-## 🆕 تحسينات v9
-
-### ↔️ أسهم ترتيب الصفحات
-- بما أن السحب والإسقاط داخل شبكة المعاينة قد لا يعمل بسلاسة على كل
-  الأجهزة، أُضيف **شريط أسهم** أسفل المعاينة يظهر **عند تحديد صفحة**:
-  - `←` / `→` لتحريك الصفحة خطوة لليسار/اليمين.
-  - `⇤` / `⇥` لنقلها لبداية/نهاية الترتيب مباشرة.
-  - يعرض الشريط موضع الصفحة الحالي (مثل "2/5").
-- هذه طريقة موثوقة 100% لإعادة ترتيب الصفحات داخل الملف الواحد.
-
-### ✏️ تعديل النص المُضاف
-- يمكنك الآن **النقر المزدوج** على أي نص أضفته في محرّر التوقيع/الكتابة،
-  فينتقل التركيز لحقل النص ويُحدَّد محتواه — تحذف جزءًا وتواصل الكتابة
-  بسهولة. التعديل يظهر مباشرة على الصفحة.
-
-### 🎯 حذف ذكي يحافظ على الخلفية
-- أداة "حذف منطقة" أصبحت **أذكى**: بدل ملء المنطقة بأبيض ثابت (الذي
-  يترك مربعًا أبيض واضحًا فوق الخلفيات الملوّنة)، صار البرنامج **يكتشف
-  لون الخلفية المحيط بالمنطقة ويملؤها بنفس اللون**. النتيجة: النص أو
-  الصورة المحددة فقط تختفي، بينما تبقى خلفية الصفحة كما هي دون أي مربع
-  أبيض دخيل.
-  - لو الخلفية بيضاء → تبقى بيضاء.
-  - لو الخلفية ملوّنة → تندمج المنطقة بلونها.
+On Windows PowerShell, set the variable first:
+`$env:QT_QPA_PLATFORM="offscreen"; python test_headless.py`.
+The run ends with `=== كل الاختبارات نجحت ===` ("all tests passed").
 
 ---
 
-## 🆕 تحسينات v8
+## Version history
 
-### 🔤 خطوط عربية مدمجة
-- أُضيفت ثلاثة خطوط تدعم **العربية والإنجليزية** معًا: **Amiri** (عادي
-  وغامق) و**Cairo**. الخطوط مُضمّنة داخل البرنامج (والـ EXE) فتعمل على
-  أي جهاز دون تثبيت.
-
-> **⚠️ مهم عند البناء**: تأكد من نسخ **مجلد `fonts` كاملًا** بجانب باقي
-> الملفات قبل تشغيل `build_exe.bat`. بعض المتصفحات لا تنزّل المجلدات
-> الفرعية تلقائيًا عند تحميل عدة ملفات، فقد يصلك المجلد ناقصًا. إن لم
-> يكن المجلد موجودًا، **لن يفشل البناء** — لكن الخطوط العربية لن تتوفر،
-> وسيظهر تنبيه. لتفعيل الخطوط العربية، ضع مجلد `fonts` بجانب الملفات
-> وأعد البناء.
-
-- النص العربي يُعالَج تلقائيًا (وصل الحروف + ترتيب الاتجاه RTL الصحيح)
-  عبر مكتبتي `arabic-reshaper` و`python-bidi`، فيظهر سليمًا تمامًا حتى
-  في النص المختلط (عربي + إنجليزي + أرقام).
-
-### ✂️ حذف عناصر من داخل الصفحة (Redaction)
-- زر جديد في المحرّر: **"حذف منطقة من الصفحة"**. تسحب بالماوس لتحديد
-  منطقة مستطيلة، فيُمسح **فعليًا** كل ما بداخلها (نص أو صورة أو جملة أو
-  ختم) في الملف الناتج — وليس مجرد تغطية. تظهر المنطقة بمستطيل أحمر
-  متقطّع أثناء التحرير.
-- هذه الطريقة (redaction) موثوقة وتعمل دائمًا، بعكس محاولة "اختيار" نص
-  أو كائن بعينه داخل PDF وهو أمر غير مضمون تقنيًا.
-
-### ✋ السحب باليد عند التكبير (Pan)
-- عند تكبير الصفحة في المحرّر، يمكنك الآن **السحب بالماوس مباشرة** على
-  الصفحة لتحريكها (pan) بدل الاعتماد على أشرطة التمرير فقط. المؤشر يتحوّل
-  ليد عند توفر هذه الإمكانية.
-
-### 🗂️ ترتيب الصفحات
-- ترتيب الصفحات بالسحب والإفلات داخل شبكة المعاينة يعمل بسلاسة، مع
-  إمكانية الإدراج في أي موضع، والحذف، والتكرار، والتراجع.
+- **v11**:
+  - Edits are no longer lost when adding files or changing ranges.
+  - Undo restores a page with its stamps.
+  - Thread-safe PyMuPDF access.
+  - Lighter thumbnails and a single save when compressing.
+  - Correct stamps on rotated pages.
+  - Redesigned toolbar, styled dialogs, staged progress window, loading
+    placeholders and splash screen.
+  - A Windows installer built to avoid Defender false positives.
+  - Builds for macOS and Linux.
+- **v10**:
+  - Fixed blank output ("insufficient data for an image") when compressing,
+    by switching to `rewrite_images`.
+  - Clear text page-move buttons replaced the arrows.
+- **v9**:
+  - Page-move buttons.
+  - Double-click to edit text.
+  - Background-aware area removal.
+- **v8**:
+  - Bundled Arabic fonts.
+  - Redaction ("remove area").
+  - Pan while zoomed.
+- **v7**:
+  - Multiple stamps no longer stack on top of each other.
+  - Editor zoom.
+  - Unique suggested file names.
+  - "Save" button.
+- **v5**:
+  - Compression slider.
+  - Images as pages.
+  - Insert pages anywhere.
+  - Interactive sign / stamp / write editor.
+- **v4**:
+  - Arabic / English interface.
+  - Real compression ratio.
+  - New visual identity and status bar.
+- **Earlier**:
+  - Background thumbnails and merging.
+  - Atomic save.
+  - Early file checks.
+  - Undo.
+  - Engine split from the UI.
 
 ---
 
-## 🔍 ماذا تم اختباره فعليًا؟
+## License
 
-تم تشغيل التطبيق فعليًا (في وضع بدون شاشة على بيئة لينكس) والتحقق من:
-- إضافة ملفات PDF ورفض الملفات غير الصالحة مع تنبيه واضح
-- تحليل نطاقات الصفحات (`parse_range`) بكل حالاتها بما فيها الحالات الخاطئة
-- توليد المعاينات عبر QThread فعليًا دون تجميد، مع التأكد أن كل صفحة
-  حصلت على صورة معاينة
-- أن الملفات تبقى مفتوحة مرة واحدة فقط (وليس فتح متكرر)
-- تدوير صفحة، تكرار صفحة، حذف صفحة، والتراجع عن الحذف
-- الدمج الفعلي عبر MergeWorker (نفس الآلية المستخدمة في الواجهة)، مع
-  التحقق من أن الملف الناتج صالح وعدد صفحاته صحيح ودورانه مطبّق بشكل سليم
-- أن الإلغاء أثناء الدمج لا يترك ملفًا ناقصًا على القرص
-- اكتشاف ملف PDF محمي بكلمة سر ورفضه مبكرًا
-- إغلاق التطبيق يحرر كل الملفات المفتوحة بدون تسريب موارد
-- تبديل اللغة فعليًا (عربي↔إنجليزي) والتأكد أن النص واتجاه الواجهة (RTL/LTR)
-  يتغيران بشكل صحيح, ذهابًا وإيابًا
-- بناء الـ stylesheet (الهوية البصرية) بدون أخطاء
-- **مستويات الضغط الأربعة** والتأكد أن الحجم يقل فعليًا كلما زادت القوة
-- **إضافة صورة كصفحة PDF** كاملة والتحقق من صحتها
-- **تطبيق التوقيع/الختم (صورة) والنص** على صفحة، والتأكد أن النص ظهر
-  فعليًا في الناتج وأن صورة الختم أُضيفت
-- التحقق البصري عبر لقطات شاشة فعلية للتطبيق (Xvfb) في كلتا اللغتين،
-  بما فيها نافذة التوقيع/الختم، وتأكيد عدم وجود تراكب بين البطاقات
-- بناء الحزمة بالكامل عبر PyInstaller بنجاح (تحقق من سلامة `PDFMerger.spec`)
-  وتشغيل الملف التنفيذي الناتج والتأكد أنه يعمل فعليًا
+The source code of this project is released under the [MIT License](LICENSE).
 
-كل هذه الاختبارات نجحت بدون أي خطأ.
+Third-party parts keep their own licenses:
+- **Amiri** and **Cairo** fonts: SIL Open Font License 1.1.
+- **PyMuPDF**: GNU AGPL v3 (or a commercial license from Artifex).
+- **PyQt5**: GNU GPL v3 (or a commercial license from Riverbank Computing).
+
+The packaged apps (exe, dmg, tar.gz) bundle PyMuPDF and PyQt5, so in
+practice they are distributed under the AGPL/GPL terms. That is fine for a
+free app whose source code is public.
