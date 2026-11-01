@@ -1,0 +1,12 @@
+[Desktop Entry]
+Type=Application
+Name=PDF Merger
+Name[ar]=أداة دمج ملفات PDF
+Comment=Merge, arrange and stamp PDF files
+Comment[ar]=دمج ملفات PDF وترتيب صفحاتها وختمها
+Exec=@INSTALL_DIR@/PDFMerger %F
+Icon=@INSTALL_DIR@/app_icon.png
+Terminal=false
+Categories=Office;Utility;
+MimeType=application/pdf;
+StartupWMClass=PDFMerger

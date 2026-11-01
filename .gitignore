@@ -1,0 +1,27 @@
+# Build output
+build/
+dist/
+installer_output/
+*.spec.bak
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# Test output (created by make_test_fixtures.py / test_headless.py)
+/test*.pdf
+/headless_test_merged.pdf
+/ct_*.pdf
+/ct_*.png
+/*_test*.pdf
+
+# Old release backups
+*.zip
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
